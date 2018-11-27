@@ -44,7 +44,7 @@ You will also need to download and unzip the data archive from [here](https://dr
 ## USAGE
 
 
-This is a, perhaps, not the final version of the code, but the pipeline (steps 1 to 3) outlined below has been tested.
+This is, perhaps, not the final version of the code, but the pipeline (steps 1 to 3) outlined below has been tested.
 
 
 The files here provide the interface to our 1D CNN-BLSTM eye movement classification model.
