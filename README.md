@@ -16,7 +16,7 @@ This is the implementation of the deep learning approach for eye movement classi
         url="https://doi.org/10.3758/s13428-018-1144-2"
     }
 
-
+The full paper is freely accessible via a [SharedIt link](https://rdcu.be/bbMo3).
 
 Authors:
 
@@ -28,10 +28,14 @@ Contact: < firstname.lastname > @tum.de
 
 To make use of this software, you need to first install the [sp_tool](https://github.com/MikhailStartsev/sp_tool/). For its installation instructions see respective README!
 
-If you want to use blstm_model.py script (to train/test models on GazeCom -- data to be found [here](http://michaeldorr.de/smoothpursuit/)), provide the correct path to the sp_tool folder via the --sp-tool-folder argument.
+If you want to use blstm_model.py script (to train/test models on GazeCom -- data to be found [here](http://michaeldorr.de/smoothpursuit/)), provide the correct path to the sp_tool folder via the `--sp-tool-folder /path/to/sp_tool/` argument.
 
 
-You will also need to download and unzip the data archive from [here](https://drive.google.com/drive/folders/1SPGTwUKnvZCUFJO05CnYTqakv-Akdth-?usp=sharing). In particular, the files in the data/inputs (and data/outputs, if necessary) sub-folders.
+You will also need to download and unzip the data archive from [here](https://drive.google.com/drive/folders/1SPGTwUKnvZCUFJO05CnYTqakv-Akdth-?usp=sharing). In particular, 
+
+* The files in `data/models` contain the pre-trained models of two different architectures: the "standard" architecture with 3 Conv1D layers, 1 dense layer, and 1 BLSTM layer (described in the main paper from above) and the improved ("final") architecture that was presented at ECVP'18 (4 Conv1D layers, 2 BLSTM layers) presentation slides can be found [here](http://michaeldorr.de/smoothpursuit/ECVP2018_presentation_slides.pdf)). Note that the "improved" architecture performs better (see paper for the evaluation of the standard model or [the project page](http://michaeldorr.de/smoothpursuit/) for the final one). 
+* The files in `data/inputs` need to be unzipped, if you want to use GazeCom data as input to the model
+* The files in `data/outputs` need to be unzipped, if you want to examine the outputs of our models without having to run it
 
 
 
