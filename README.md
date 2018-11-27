@@ -22,7 +22,8 @@ Authors:
 
 Mikhail Startsev, Ioannis Agtzidis, Michael Dorr
 
-For feedback and collaboration you can contact Mikhail Startsev via mikhail.startsev@tum.de, or any of the authors above at `< firstname.lastname > @tum.de`.
+For feedback and collaboration you can contact Mikhail Startsev via mikhail.startsev@tum.de, or any of the authors above at\
+`< firstname.lastname > @tum.de`.
 
 
 # DESCRIPTION
