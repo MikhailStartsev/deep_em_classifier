@@ -28,10 +28,12 @@ from sp_tool.arff_helper import ArffHelper
 from sp_tool.evaluate import CORRESPONDENCE_TO_HAND_LABELLING_VALUES
 from sp_tool import recording_processor as sp_processor
 
+# If need to set a limit on how much GPU memory the model is allowed to use
+
 # import tensorflow as tf
 # from keras.backend.tensorflow_backend import set_session
 # config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 1.0 # 0.5
+# config.gpu_options.per_process_gpu_memory_fraction = 0.5
 # config.gpu_options.visible_device_list = "0"
 # set_session(tf.Session(config=config))
 
@@ -515,7 +517,8 @@ def run(args):
     #
     # Now these are stored locally, but if distributed training is desired, make sure that especially MODELS_DIR
     # points to a shared location that is accessible for reading and writing to all training nodes!
-    MODELS_DIR = 'data/models/'
+    # Pass the appropriate --model-root-path argument!
+    MODELS_DIR = 'data/models/' if args.model_root_path is None else args.model_root_path
     OUT_DIR = 'data/outputs/'
 
     # by default, do training; --final-run will initiate testing mode
@@ -995,6 +998,10 @@ def parse_args(dry_run=False):
     parser.add_argument('--folder', '--output-folder', dest='output_folder', default=None,
                         help='Only for --final-run: write prediction results as ARFF files here.'
                              'Can be set to "auto" to select automatically.')
+    parser.add_argument('--model-root-path', default='data/models',
+                        help='The path which will contain all trained models. If you are running the testing, set this '
+                             'argument to the same value as was used during training, so that the models can be '
+                             'automatically detected.')
 
     parser.add_argument('--feature-files-folder', '--feature-folder', '--feat-folder',
                         default='data/inputs/GazeCom_all_features/',
