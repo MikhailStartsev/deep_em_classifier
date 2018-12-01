@@ -168,7 +168,7 @@ You can configure the architecture by passing appropriate parameters via console
   <p align="center"><img src="https://github.com/MikhailStartsev/deep_em_classifier/blob/master/figures/num_blstm.png" width="400"></p>
   
   * `--blstm-units` acts just like `--conv-units`, but for the number of BLSTM units in respective layers
-  * `--no-bidirectional` will force the model to use LSTM instead of BLSTM (leasd to poorer performance, but could be used in an online detection set-up)
+  * `--no-bidirectional` will force the model to use LSTM instead of BLSTM (leasd to poorer performance, but could be used in an online detection set-up). The plot below represents the training loss value (categorical cross-entropy) for BLSTM vs 2 stacked uni-directional LSTMs (to roughly match the number of parameters) models:
   
   <p align="center"><img src="https://github.com/MikhailStartsev/deep_em_classifier/blob/master/figures/blstm_vs_lstm.png" width="400"></p>
 
