@@ -6,8 +6,9 @@
 % input:
 %   arffFile    - file containing arff data
 %   outputFile  - fiel to store data
-
 function AnnotateData(arffFile, outputFile)
+    addpath('arff_utils')
+
     windowsSize = [1 2 4 8 16];
 
     [data, metadata, attributes, relation, comments] = LoadArff(arffFile);

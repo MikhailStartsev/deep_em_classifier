@@ -1,10 +1,20 @@
 % AnnotateDataAll.m
 %
 % This function annotates all the gazsamples with velocity and acceleration data
-
-function AnnotateDataAll()
-    arffBasepath = '../data/inputs/GazeCom_ground_truth';
-    outBasepath = '../data/inputs/GazeCom_features';  % already generated features should be in ../data/inputs/GazeCom_all_features
+% input:
+%   arffBasepath    - folder containing the input .arff files (with gaze data)
+%   outBasepath     - path to the folder where the resulting extracted
+%                     feature .arff files will be written; does not have to
+%                     exist already.
+% Both arguments can be omitted, will then default to the folders intended
+% to be used with the repository (see global README).
+function AnnotateDataAll(arffBasepath, outBasepath)
+    if nargin < 1
+        arffBasepath = '../data/inputs/GazeCom_ground_truth';
+    end
+    if nargin < 2
+        outBasepath = '../data/inputs/GazeCom_features';  % already generated features should appear in ../data/inputs/GazeCom_all_features
+    end
 
     dirList = glob([arffBasepath '/*']);
     for i=1:size(dirList,1)
