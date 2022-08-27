@@ -45,7 +45,7 @@ def zip_equal(*args):
     :return: yields what a usual zip would
     """
     fallback = object()
-    for combination in itertools.izip_longest(*args, fillvalue=fallback):
+    for combination in itertools.zip_longest(*args, fillvalue=fallback):
         if any((c is fallback for c in combination)):
             raise ValueError('zip_equals arguments have different length')
         yield combination
@@ -250,8 +250,8 @@ def extract_windows(X, y, window_length,
         padding_size_x = padding_features
         padding_size_y = 0
         if temporal_padding:
-            padding_size_x += window_length / 2
-            padding_size_y += window_length / 2
+            padding_size_x += window_length // 2
+            padding_size_y += window_length // 2
 
         padded_x = np.pad(x_item, ((padding_size_x, padding_size_x), (0, 0)), 'reflect')
         padded_y = np.pad(y_item, ((padding_size_y, padding_size_y), (0, 0)), 'reflect')
@@ -261,10 +261,10 @@ def extract_windows(X, y, window_length,
         # @res_X will have windows of size @window_length + 2*@padding_features
         window_length_x = window_length + 2 * padding_features
         res_X += [padded_x[i:i + window_length_x, :] for i in
-                  xrange(0, padded_x.shape[0] - window_length_x + 1, downsample)]
+                  range(0, padded_x.shape[0] - window_length_x + 1, downsample)]
         # @res_Y will have windows of size @window_length, central to the ones in @res_X
         res_Y += [padded_y[i:i + window_length, :] for i in
-                  xrange(0, padded_y.shape[0] - window_length + 1, downsample)]
+                  range(0, padded_y.shape[0] - window_length + 1, downsample)]
     return res_X, res_Y
 
 
@@ -344,8 +344,8 @@ def evaluate_test(model, X, y=None,
         # no @y_item-padding required
 
         if temporal_padding:
-            padding_size_x = [elem + window_length / 2 for elem in padding_size_x]
-            padding_size_y = [elem + window_length / 2 for elem in padding_size_y]
+            padding_size_x = [elem + window_length // 2 for elem in padding_size_x]
+            padding_size_y = [elem + window_length // 2 for elem in padding_size_y]
 
         padded_x = np.pad(x_item, (padding_size_x, (0, 0)), 'reflect')  # x is padded with reflections to limit artifacts
         if y_item is not None:
@@ -359,11 +359,11 @@ def evaluate_test(model, X, y=None,
         # @res_X will have windows of size @window_length + 2*@padding_features
         window_length_x = window_length + 2 * padding_features
         res_X += [padded_x[i:i + window_length_x, :] for i in
-                  xrange(0, padded_x.shape[0] - window_length_x + 1, downsample)]
+                  range(0, padded_x.shape[0] - window_length_x + 1, downsample)]
         if y_item is not None:
             # @res_Y will have windows of size @window_length, central to the ones in @res_X
             res_Y += [padded_y[i:i + window_length, :] for i in
-                      xrange(0, padded_y.shape[0] - window_length + 1, downsample)]
+                      range(0, padded_y.shape[0] - window_length + 1, downsample)]
 
         items_end.append(len(res_X))
 
@@ -376,14 +376,14 @@ def evaluate_test(model, X, y=None,
         res_X[:, :, col_ind] -= res_X[:, 0, col_ind].reshape(-1, 1)
 
     # augment to fit batch size
-    batch_size = model.get_config()[0]['config']['batch_input_shape'][0]
+    batch_size = model.get_config()['layers'][0]['config']['batch_input_shape'][0]
     original_len = res_X.shape[0]
     target_len = int(np.ceil(float(original_len) / batch_size)) * batch_size
     res_X = np.pad(res_X,
                    pad_width=((0, target_len - res_X.shape[0]), (0, 0), (0, 0)),
                    mode='constant')
     # take only the needed predictions
-    res_proba = model.predict_proba(res_X, batch_size=batch_size)[:original_len]
+    res_proba = model.predict(res_X, batch_size=batch_size)[:original_len]
 
     results = {}
 
@@ -403,7 +403,7 @@ def evaluate_test(model, X, y=None,
         results['accuracy'] = (np.mean(res[np.logical_not(unknown_class_mask)] ==
                                        np.argmax(res_Y[np.logical_not(unknown_class_mask)], axis=-1)))
 
-        for stat_i, stat_name in zip(range(1, 5), ['FIX', 'SACC', 'SP', 'NOISE']):
+        for stat_i, stat_name in zip(list(range(1, 5)), ['FIX', 'SACC', 'SP', 'NOISE']):
             results['F1-{}'.format(stat_name)] = K.eval(categorical_f1_score_for_class(res_Y, res_proba, stat_i,
                                                                                        'float64'))
 
@@ -507,8 +507,8 @@ def run(args):
 
     # For every numeric label we will need a categorical (human-readable) value to easier interpret results.
     CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE = {v: k for k, v in
-                                                       CORRESPONDENCE_TO_HAND_LABELLING_VALUES.iteritems()}
-    print CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE
+                                                       CORRESPONDENCE_TO_HAND_LABELLING_VALUES.items()}
+    print(CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE)
     num_classes = 5  # 0 = UNKNOWN, 1 = FIX, 2 = SP, 3 = SACC, 4 = NOISE
 
     # Paths, where to store models and generated outputs (.arff files with sample-level labels).
@@ -559,12 +559,12 @@ def run(args):
     # Set LOAD_CLEAN_DATA to False, if this is not desired.
     LOAD_CLEAN_DATA = TRAINING_MODE
     if LOAD_CLEAN_DATA:
-        print 'Loading clean data'
+        print('Loading clean data')
     else:
-        print 'Loading raw data'
+        print('Loading raw data')
 
-    print 'Feature description:', get_feature_descriptor(args)
-    print 'Architecture description:', get_architecture_descriptor(args)
+    print('Feature description:', get_feature_descriptor(args))
+    print('Architecture description:', get_architecture_descriptor(args))
 
     # Where to find feature files. "{}" in the template is where a clip name will be inserted.
     # The "root" folder is by default 'data/inputs/GazeCom_all_features'
@@ -587,7 +587,7 @@ def run(args):
     if args.model_name is not None:
         MODEL_PATH = '{}/{}/'.format(MODELS_DIR, args.model_name)
 
-    print 'Selected model path:', MODEL_PATH
+    print('Selected model path:', MODEL_PATH)
     if not args.dry_run:
         if not os.path.exists(MODEL_PATH):
             os.mkdir(MODEL_PATH)
@@ -615,7 +615,7 @@ def run(args):
     # Depending on the command line arguments, certain keys are used as features (@keys_to_keep here)
     keys_to_keep = get_arff_attributes_to_keep(args)
 
-    print 'Using the following features:', keys_to_keep
+    print('Using the following features:', keys_to_keep)
 
     data_X = []
     data_Y = []
@@ -629,13 +629,13 @@ def run(args):
         keys_to_convert_to_degrees = ['x', 'y'] + [k for k in keys_to_keep if 'speed_' in k or 'acceleration_' in k]
         keys_to_convert_to_degrees = sorted(set(keys_to_convert_to_degrees).intersection(keys_to_keep))
         # Conversion is carried out by dividing by pixels-per-degree value (PPD)
-        print 'Will divide by PPD the following keys', keys_to_convert_to_degrees
+        print('Will divide by PPD the following keys', keys_to_convert_to_degrees)
 
         time_scale = 1e-6  # time is originally in microseconds; scale to seconds
 
         total_files = 0
         for video_name in gc['video_names']:
-            print 'For {} using files from {}'.format(video_name, files_template.format(video_name))
+            print('For {} using files from {}'.format(video_name, files_template.format(video_name)))
             fnames = sorted(glob.glob(files_template.format(video_name)))
             total_files += len(fnames)
 
@@ -678,7 +678,7 @@ def run(args):
                 data_Y_one_hot[-1].append(np.eye(num_classes)[data_Y[-1][-1]])  # convert numeric labels to one-hot form
 
         if total_files > 0:
-            print 'Loaded a total of {} files'.format(total_files)
+            print('Loaded a total of {} files'.format(total_files))
         else:
             raise ValueError('No input files found! Check that the directory "{}" exists '
                              'and is accessible for reading, or provide a different value for the '
@@ -696,10 +696,10 @@ def run(args):
             pickle.dump({'data_X': data_X, 'data_Y': data_Y, 'data_Y_one_hot': data_Y_one_hot,
                          'source_fnames': source_fnames, 'source_objs': source_objs},
                         open(raw_data_set_fname, 'w'))
-        print 'Written to', raw_data_set_fname
+        print('Written to', raw_data_set_fname)
     else:
         # If the raw file already exists, just load it
-        print 'Loading from', raw_data_set_fname
+        print('Loading from', raw_data_set_fname)
         loaded_data = pickle.load(open(raw_data_set_fname))
         data_X, data_Y, data_Y_one_hot = loaded_data['data_X'], loaded_data['data_Y'], loaded_data['data_Y_one_hot']
         if args.final_run:
@@ -713,7 +713,7 @@ def run(args):
     # Will subtract the initial value from the following keys (only the changes in these keys should matter),
     # not to overfit, for example, for spatial location of the eye movement: x and y coordinates.
     keys_to_subtract_start = sorted({'x', 'y'}.intersection(keys_to_keep))
-    print 'Will subtract the starting values of the following features:', keys_to_subtract_start
+    print('Will subtract the starting values of the following features:', keys_to_subtract_start)
     keys_to_subtract_start_indices = [i for i, key in enumerate(keys_to_keep) if key in keys_to_subtract_start]
 
     for subset_index in range(len(data_X)):
@@ -765,14 +765,14 @@ def run(args):
         model_fname = MODEL_PATH + '/Conv_sample_windows_epochs_{}_without_{}.h5'.format(args.num_epochs, video_name)
         if os.path.exists(model_fname):
             ALREADY_TRAINED = True
-            print 'Skipped training, file in', model_fname, 'exists'
+            print('Skipped training, file in', model_fname, 'exists')
             if not args.final_run:
                 # if no need to generate output .arff files, just skip this cross-validation fold
                 continue
         else:
             # have not begun training yet
             ALREADY_TRAINED = False
-            print 'Creating an empty file in {}'.format(model_fname)
+            print('Creating an empty file in {}'.format(model_fname))
             os.system('touch "{}"'.format(model_fname))
 
         if not ALREADY_TRAINED:
@@ -781,7 +781,7 @@ def run(args):
             r = np.random.RandomState(0)
             # here, we ignore the "left out" video clip @i, but aggregate over all others
             train_set_len = sum([len(windows_X[j]) for j in range(len(windows_X)) if j != i])
-            print 'Total amount of windows:', train_set_len
+            print('Total amount of windows:', train_set_len)
             # will shuffle all samples according to this permutation, and will keep only the necessary amount
             # (by default, 50,000 for training)
             perm = r.permutation(train_set_len)[:args.num_training_samples]
@@ -812,7 +812,7 @@ def run(args):
                 # otherwise
                 model = keras.models.load_model(MODEL_PATH + '/Conv_sample_windows_epochs_{}_without_{}.h5'.format(args.initial_epoch, video_name),
                                                 custom_objects={'f1_SP': f1_SP, 'f1_SACC': f1_SACC, 'f1_FIX': f1_FIX})
-                print 'Loaded model from', MODEL_PATH + '/Conv_sample_windows_epochs_{}_without_{}.h5'.format(args.initial_epoch, video_name)
+                print('Loaded model from', MODEL_PATH + '/Conv_sample_windows_epochs_{}_without_{}.h5'.format(args.initial_epoch, video_name))
             else:
                 model = create_model(num_classes=num_classes, batch_size=args.batch_size,
                                      train_data_shape=train_X.shape,
@@ -827,7 +827,7 @@ def run(args):
             model = keras.models.load_model(model_fname, custom_objects={'f1_SP': f1_SP,
                                                                          'f1_SACC': f1_SACC,
                                                                          'f1_FIX': f1_FIX})
-            print 'Skipped training, loaded model from', model_fname
+            print('Skipped training, loaded model from', model_fname)
 
         if args.dry_run:
             return model
@@ -864,24 +864,24 @@ def run(args):
                                                                        # if we still need to write output .arff files
 
         # store all results (raw and processed)
-        for k in raw_results.keys():
+        for k in list(raw_results.keys()):
             if args.final_run:
                 # On the "final" run, @raw[k] is split into several sequences each, need to concatenate here
                 # (in order to maintain the same format of the .pickle files)
                 raw_results[k].append(np.concatenate(raw[k], axis=0))
             else:
                 raw_results[k].append(raw[k])
-        for k in results.keys():
+        for k in list(results.keys()):
             results[k].append(processed[k])
 
-        print 'Evaluating for video', video_name
+        print('Evaluating for video', video_name)
         for stat_name in ['FIX', 'SACC', 'SP', 'NOISE']:
-            print 'F1-{}'.format(stat_name), results['F1-{}'.format(stat_name)][-1]
+            print('F1-{}'.format(stat_name), results['F1-{}'.format(stat_name)][-1])
 
         if args.final_run and args.output_folder is not None:
             if args.output_folder == 'auto':
                 args.output_folder = OUT_PATH
-            print 'Creating the detection outputs in', args.output_folder
+            print('Creating the detection outputs in', args.output_folder)
             # Generate actual ARFF outputs
             # Iterate through file names, original objects (from input .arff's), ground truth labels,
             # and predicted labels:
@@ -916,7 +916,7 @@ def run(args):
                 # fill in with categorical values instead of numerical ones
                 # (use @CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE for conversion)
                 source_obj['data'][sp_processor.EM_TYPE_ATTRIBUTE_NAME] = \
-                    map(lambda x: CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE[x], labels_pred)
+                    [CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE[x] for x in labels_pred]
 
                 ArffHelper.dump(source_obj, open(out_fname, 'w'))
 
@@ -930,36 +930,36 @@ def run(args):
         raw_results['pred'] = np.concatenate(raw_results['pred'])
 
         mask = np.argmax(raw_results['true'], axis=-1) != 0
-        print 'Found', np.logical_not(mask).sum(), 'UNKNOWN samples in the raw ``true\'\' predictions ' \
+        print('Found', np.logical_not(mask).sum(), 'UNKNOWN samples in the raw ``true\'\' predictions ' \
                                                    '(including the artificially padded parts of the last windows ' \
-                                                   'in each sequence, in order to match window width)'
+                                                   'in each sequence, in order to match window width)')
 
-        print raw_results['true'].shape, raw_results['pred'].shape
+        print(raw_results['true'].shape, raw_results['pred'].shape)
 
         unknown_class_mask = raw_results['true'][:, :, 0] == 1  # count "unknown"s in the one-hot-encoded true labels
 
-        print 'Overall classification scores per class:'
-        for stat_i, stat_name in zip(range(1, 5), ['FIX', 'SACC', 'SP', 'NOISE']):
+        print('Overall classification scores per class:')
+        for stat_i, stat_name in zip(list(range(1, 5)), ['FIX', 'SACC', 'SP', 'NOISE']):
             results['overall-F1-{}'.format(stat_name)] = K.eval(categorical_f1_score_for_class(raw_results['true'],
                                                                                                raw_results['pred'],
                                                                                                stat_i,
                                                                                                'float64'))
-            print 'F1-{}'.format(stat_name), results['overall-F1-{}'.format(stat_name)]
+            print('F1-{}'.format(stat_name), results['overall-F1-{}'.format(stat_name)])
 
         results['overall-acc'] = np.mean(np.argmax(raw_results['true'][np.logical_not(unknown_class_mask)], axis=-1) ==
                                          np.argmax(raw_results['pred'][np.logical_not(unknown_class_mask)], axis=-1))
 
         # how many samples did the network leave "UNKNOWN"
         results['overall-UNKNOWN-samples'] = (np.argmax(raw_results['pred'], axis=-1) == 0).sum()
-        print 'Sample left UNKNOWN:', results['overall-UNKNOWN-samples'], '(including the UNKNOWN samples matching ' \
+        print('Sample left UNKNOWN:', results['overall-UNKNOWN-samples'], '(including the UNKNOWN samples matching ' \
                                                                           'the window-padded ``true\'\' labels from ' \
-                                                                          'above)'
+                                                                          'above)')
 
         # Run the full evaluation.
         # Need a downloaded and installed sp_tool package for this! See http://michaeldorr.de/smoothpursuit/sp_tool.zip
         # See README for more information on how to do this.
         if args.final_run and args.output_folder:
-            print 'Running sp_tool eval --> {out_dir}/eval.json'.format(out_dir=args.output_folder)
+            print('Running sp_tool eval --> {out_dir}/eval.json'.format(out_dir=args.output_folder))
             cmd = 'python {sp_tool_dir}/examples/evaluate_on_gazecom.py ' \
                   '--in "{out_dir}" ' \
                   '--hand "{gt_dir}" ' \
@@ -967,22 +967,22 @@ def run(args):
                   '"{out_dir}/eval.json"'.format(sp_tool_dir=args.sp_tool_folder,
                                                  out_dir=args.output_folder,
                                                  gt_dir=args.ground_truth_folder)
-            print 'Running command:\n', cmd
+            print('Running command:\n', cmd)
 
             if os.path.exists('{}/examples/'.format(args.sp_tool_folder)):
                 cmd_res = os.system(cmd)
                 if cmd_res != 0:
-                    print 'Something failed during the sp_tool evaluation run. Check the command above and run it ' \
+                    print('Something failed during the sp_tool evaluation run. Check the command above and run it ' \
                           'manually, if necessary! Make sure you also *installed* the sp_tool framework, not just ' \
                           'downloaded it (see sp_tool/README for details). Also, make sure both the output folder ' \
                           '"{}" and the ground truth folder "{}" exist (e.g. were extracted from the respective ' \
-                          'archives).'.format(args.output_folder, args.ground_truth_folder)
+                          'archives).'.format(args.output_folder, args.ground_truth_folder))
 
             else:
-                print '\n\nCould not run final evaluation! sp_tool folder could not be found in', args.sp_tool_folder
-                print 'Pass the --sp-tool-folder argument that points to the correct location (relative or absolute) ' \
+                print('\n\nCould not run final evaluation! sp_tool folder could not be found in', args.sp_tool_folder)
+                print('Pass the --sp-tool-folder argument that points to the correct location (relative or absolute) ' \
                       'of the sp_tool folder, or download the full deep_eye_movement_classification.zip archive from' \
-                      'http://michaeldorr.de/smoothpursuit again.'
+                      'http://michaeldorr.de/smoothpursuit again.')
 
 
 def parse_args(dry_run=False):

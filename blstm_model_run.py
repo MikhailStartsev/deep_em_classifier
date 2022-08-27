@@ -28,15 +28,15 @@ def run(args):
     subfolders_and_fnames = find_all_subfolder_prefixes_and_input_files(args)
     out_fnames = get_corresponding_output_paths(subfolders_and_fnames, args)
 
-    print 'Processing {} file(s) from "{}" into "{}"'.format(len(out_fnames),
+    print('Processing {} file(s) from "{}" into "{}"'.format(len(out_fnames),
                                                              args.input,
-                                                             args.output)
+                                                             args.output))
 
     arff_objects = [ArffHelper.load(open(fname)) for _, fname in subfolders_and_fnames]
 
     keys_to_keep = blstm_model.get_arff_attributes_to_keep(args)
-    print 'Will look for the following keys in all .arff files: {}. ' \
-          'If any of these are missing, an error will follow!'.format(keys_to_keep)
+    print('Will look for the following keys in all .arff files: {}. ' \
+          'If any of these are missing, an error will follow!'.format(keys_to_keep))
     all_features = [get_features_columns(obj, args) for obj in arff_objects]
 
     model = keras.models.load_model(args.model_path,
@@ -47,12 +47,12 @@ def run(args):
     # Guess the padding size from model input and output size
     window_length = model.output_shape[1]  # (batch size, window size, number of classes)
     padded_window_shape = model.input_shape[1]  # (batch size, window size, number of features)
-    padding_features = (padded_window_shape - window_length) / 2
-    print 'Will pad the feature sequences with {} samples on each side.'.format(padding_features)
+    padding_features = (padded_window_shape - window_length) // 2
+    print('Will pad the feature sequences with {} samples on each side.'.format(padding_features))
 
     keys_to_subtract_start = sorted({'x', 'y'}.intersection(keys_to_keep))
     if len(keys_to_subtract_start) > 0:
-        print 'Will subtract the starting values of the following features:', keys_to_subtract_start
+        print('Will subtract the starting values of the following features:', keys_to_subtract_start)
     keys_to_subtract_start_indices = [i for i, key in enumerate(keys_to_keep) if key in keys_to_subtract_start]
 
     predictions, _ = blstm_model.evaluate_test(model=model,
@@ -64,8 +64,8 @@ def run(args):
                                                split_by_items=True)
 
     CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE = {v: k for k, v in
-                                                       CORRESPONDENCE_TO_HAND_LABELLING_VALUES.iteritems()}
-    print 'Class names:', CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE
+                                                       CORRESPONDENCE_TO_HAND_LABELLING_VALUES.items()}
+    print('Class names:', CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE)
 
     for original_obj, out_fname, predicted_labels in zip_equal(arff_objects, out_fnames, predictions['pred']):
         # Create folders that might not exist yet
@@ -87,11 +87,11 @@ def run(args):
         # Fill in with categorical values instead of numerical ones
         # (use @CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE for conversion)
         original_obj['data'][sp_processor.EM_TYPE_ATTRIBUTE_NAME] = \
-            map(lambda x: CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE[x], labels_pred)
+            [CORRESPONDENCE_TO_HAND_LABELLING_VALUES_REVERSE[x] for x in labels_pred]
 
         ArffHelper.dump(original_obj, open(out_fname, 'w'))
 
-    print 'Prediction and file operations finished, check {} for outputs!'.format(args.output)
+    print('Prediction and file operations finished, check {} for outputs!'.format(args.output))
 
     return zip_equal(out_fnames, predictions['pred'])
 
@@ -184,7 +184,7 @@ def find_all_subfolder_prefixes_and_input_files(args):
 
     res = []
     for dirpath, dirnames, filenames in os.walk(args.input):
-        filenames = filter(lambda x: x.lower().endswith('.arff'), filenames)
+        filenames = [x for x in filenames if x.lower().endswith('.arff')]
         if filenames:
             dirpath_suffix = dirpath[len(args.input):].strip('/')
             res += [(dirpath_suffix, os.path.join(dirpath, fname)) for fname in filenames]
@@ -202,7 +202,7 @@ def get_corresponding_output_paths(subfolders_and_full_input_filenames, args):
     """
     if args.output is None:
         args.output = tempfile.mkdtemp(prefix='blstm_model_output_')
-        print >> sys.stderr, 'No --output was provided, creating a folder in', args.output
+        print('No --output was provided, creating a folder in', args.output, file=sys.stderr)
 
     if args.output.lower().endswith('.arff'):
         assert len(subfolders_and_full_input_filenames) == 1, 'If --output is just one file, cannot have more than ' \
@@ -230,7 +230,7 @@ def get_features_columns(arff_obj, args):
     # Conversion is carried out by dividing by pixels-per-degree value (PPD)
     if get_features_columns.run_count == 0:
         if len(keys_to_convert_to_degrees) > 0:
-            print 'Will divide by PPD the following features', keys_to_convert_to_degrees
+            print('Will divide by PPD the following features', keys_to_convert_to_degrees)
     get_features_columns.run_count += 1
 
     # normalize coordinates in @o by dividing by @ppd_f -- the pixels-per-degree value of the @arff_obj

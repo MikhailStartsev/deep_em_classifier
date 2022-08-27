@@ -61,8 +61,7 @@ If you want to use blstm_model.py script (to train/test models on GazeCom -- dat
 
 ## Standard package dependencies
 
-* keras (we used version 2.1.1 with tensorflow backend, version 1.4.0)
-* numpy
+See `requirements.txt`, or use `pip install -r requirements.txt` directly.
 
 # USAGE
 
